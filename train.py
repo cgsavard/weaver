@@ -16,7 +16,7 @@ from utils.dataset import SimpleIterDataset
 parser = argparse.ArgumentParser()
 parser.add_argument('--regression-mode', action='store_true', default=False,
                     help='run in regression mode if this flag is set; otherwise run in classification mode')
-parser.add_argument('-c', '--data-config', type=str, default='data/ak15_points_pf_sv_v0.yaml',
+parser.add_argument('-c', '--data-config', type=str, default='data/ak15_points_pf_sv.yaml',
                     help='data config YAML file')
 parser.add_argument('-i', '--data-train', nargs='*', default=[],
                     help='training files')
@@ -38,7 +38,7 @@ parser.add_argument('--demo', action='store_true', default=False,
                     help='quickly test the setup by running over only a small number of events')
 parser.add_argument('--lr-finder', type=str, default=None,
                     help='run learning rate finder instead of the actual training; format: ``start_lr, end_lr, num_iters``')
-parser.add_argument('-n', '--network-config', type=str, default='networks/particle_net_pfcand_sv.py',
+parser.add_argument('-n', '--network-config', type=str, default='networks/particle_net_pf_sv.py',
                     help='network architecture configuration file; the path must be relative to the current dir')
 parser.add_argument('--network-option', nargs=2, action='append', default=[],
                     help='options to pass to the model class constructor, e.g., `--network-option use_counts False`')
@@ -321,7 +321,7 @@ def main(args):
         return
 
     model, model_info, network_module, network_options = model_setup(args, data_config)
-
+    
     # export to ONNX
     if args.export_onnx:
         onnx(args, model, data_config, model_info)
