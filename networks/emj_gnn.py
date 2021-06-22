@@ -11,15 +11,15 @@ def get_model(data_config, **kwargs):
     fc_params = [(256, 0.1)]
     use_fusion = True
 
-    pf_features_dims = len(data_config.input_dicts['pf_features'])
+    features_dims = len(data_config.input_dicts['features'])
     num_classes = len(data_config.label_value)
-    model = EmjTagger(pf_features_dims, num_classes,
-                              conv_params, fc_params,
-                              use_fusion=use_fusion,
-                              use_fts_bn=kwargs.get('use_fts_bn', False),
-                              use_counts=kwargs.get('use_counts', True),
-                              pf_input_dropout=kwargs.get('pf_input_dropout', None),
-                              for_inference=kwargs.get('for_inference', False)
+    model = EmjTagger(features_dims, num_classes,
+                      conv_params, fc_params,
+                      use_fusion=use_fusion,
+                      use_fts_bn=kwargs.get('use_fts_bn', False),
+                      use_counts=kwargs.get('use_counts', True),
+                      input_dropout=kwargs.get('input_dropout', None),
+                      for_inference=kwargs.get('for_inference', False)
                               )
 
     model_info = {
