@@ -86,7 +86,6 @@ def train_classification(model, loss_func, opt, scheduler, train_loader, dev, ep
                 'AvgLoss': '%.5f' % (total_loss / num_batches),
                 'Acc': '%.5f' % (correct / num_examples),
                 'AvgAcc': '%.5f' % (total_correct / count)})
-    m_file.write(str(total_correct/count)+","+str(total_loss/num_batches)+",")
 
             if tb_helper:
                 tb_helper.write_scalars([
@@ -99,6 +98,8 @@ def train_classification(model, loss_func, opt, scheduler, train_loader, dev, ep
 
             if steps_per_epoch is not None and num_batches >= steps_per_epoch:
                 break
+
+    m_file.write(str(total_correct/count)+","+str(total_loss/num_batches)+",")
 
     time_diff = time.time() - start_time
     _logger.info('Processed %d entries in total (avg. speed %.1f entries/s)' % (count, count / time_diff))
