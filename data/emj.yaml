@@ -29,11 +29,25 @@ inputs:
       ###              clip_min(optional, default=-5), 
       ###              clip_max(optional, default=5), 
       ###              pad_value(optional, default=0)]
-         - del_eta
-         - del_phi
+         #- del_eta
+         #- del_phi
+         #- abs_del_eta
+         #- abs_del_phi
+         - del_r
          - log_pt
          - log_pt_jetpt
-         - del_r
+         #- log_E
+         #- log_E_jetE
+         #- ip2dpv0
+         #- ip2dsigpv0
+         #- ip3dpv0
+         #- ip3dsigpv0
+         #- ipz
+         - tran_ip2dpv0
+         #- tran_ip2dsigpv0
+         #- tran_ip3dpv0
+         #- tran_ip3dsigpv0
+         - tran_ipz
    mask:
       length: 100
       vars: 

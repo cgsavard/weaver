@@ -14,7 +14,6 @@ def _flatten_label(label, mask=None):
         label = label.view(-1)
         if mask is not None:
             label = label[mask.view(-1)]
-    # print('label', label.shape, label)
     return label
 
 
@@ -25,11 +24,10 @@ def _flatten_preds(preds, mask=None, label_axis=1):
         preds = preds.view((-1, preds.shape[-1]))
         if mask is not None:
             preds = preds[mask.view(-1)]
-    # print('preds', preds.shape, preds)
     return preds
 
 
-def train_classification(model, loss_func, opt, scheduler, train_loader, dev, grad_scaler=None):
+def train_classification(model, loss_func, opt, scheduler, train_loader, dev, grad_scaler=None, m_file=None):
     model.train()
 
     data_config = train_loader.dataset.config
@@ -42,8 +40,13 @@ def train_classification(model, loss_func, opt, scheduler, train_loader, dev, gr
     start_time = time.time()
     with tqdm.tqdm(train_loader) as tq:
         for X, y, _ in tq:
+            #print('X:',X)
+            #print('Y:',y)
             inputs = [X[k].to(dev) for k in data_config.input_names]
             label = y[data_config.label_names[0]].long()
+            #print('LABEL_NAMES[0]:',data_config.label_names[0])
+            #print('INPUTS:',inputs)
+            #print('LABEL:', label)
             try:
                 label_mask = y[data_config.label_names[0] + '_mask'].bool()
             except KeyError:
@@ -78,6 +81,7 @@ def train_classification(model, loss_func, opt, scheduler, train_loader, dev, gr
                 'AvgLoss': '%.5f' % (total_loss / num_batches),
                 'Acc': '%.5f' % (correct / num_examples),
                 'AvgAcc': '%.5f' % (total_correct / count)})
+    m_file.write(str(total_correct/count)+","+str(total_loss/num_batches)+",")
 
     time_diff = time.time() - start_time
     _logger.info('Processed %d entries in total (avg. speed %.1f entries/s)' % (count, count / time_diff))
@@ -147,7 +151,7 @@ def evaluate_classification(model, test_loader, dev, for_training=True, loss_fun
     _logger.info('Evaluation metrics: \n%s', '\n'.join(['    - %s: \n%s' % (k, str(v)) for k, v in metric_results.items()]))
 
     if for_training:
-        return total_correct / count
+        return total_correct / count, total_loss / count
     else:
         # convert 2D labels/scores
         if len(scores) != entry_count:

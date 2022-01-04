@@ -376,13 +376,15 @@ def main(args):
 
         # training loop
         best_valid_metric = np.inf if args.regression_mode else 0
+        m_file = open("metric_file.txt","w")
+        m_file.write("train_acc,train_loss,val_acc,val_loss\n")
         for epoch in range(args.num_epochs):
             if args.load_epoch is not None:
                 if epoch <= args.load_epoch:
                     continue
             print('-' * 50)
             _logger.info('Epoch #%d training' % epoch)
-            train(model, loss_func, opt, scheduler, train_loader, dev, grad_scaler=scaler)
+            train(model, loss_func, opt, scheduler, train_loader, dev, grad_scaler=scaler,m_file=m_file)
             if args.model_prefix:
                 dirname = os.path.dirname(args.model_prefix)
                 if dirname and not os.path.exists(dirname):
@@ -392,7 +394,8 @@ def main(args):
                 torch.save(opt.state_dict(), args.model_prefix + '_epoch-%d_optimizer.pt' % epoch)
 
             _logger.info('Epoch #%d validating' % epoch)
-            valid_metric = evaluate(model, val_loader, dev, loss_func=loss_func)
+            valid_metric,valid_loss = evaluate(model, val_loader, dev, loss_func=loss_func)
+            m_file.write(str(valid_metric)+","+str(valid_loss)+"\n")
             is_best_epoch = (valid_metric < best_valid_metric) if args.regression_mode else (valid_metric > best_valid_metric)
             if is_best_epoch:
                 best_valid_metric = valid_metric
@@ -400,6 +403,7 @@ def main(args):
                     shutil.copy2(args.model_prefix + '_epoch-%d_state.pt' % epoch, args.model_prefix + '_best_epoch_state.pt')
                     torch.save(model, args.model_prefix + '_best_epoch_full.pt')
             _logger.info('Epoch #%d: Current validation metric: %.5f (best: %.5f)' % (epoch, valid_metric, best_valid_metric))
+        m_file.close()
     else:
         # run prediction
         if args.model_prefix.endswith('.onnx'):
@@ -419,6 +423,8 @@ def main(args):
         if args.predict_output:
             os.makedirs(os.path.dirname(args.predict_output), exist_ok=True)
             if args.predict_output.endswith('.root'):
+                print('SCORES:',scores)
+                print('LABELS:',labels)
                 save_root(data_config, scores, labels, observers)
             else:
                 save_awk(scores, labels, observers)
