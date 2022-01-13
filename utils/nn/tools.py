@@ -205,7 +205,7 @@ def evaluate_classification(model, test_loader, dev, epoch, for_training=True, l
         ['    - %s: \n%s' % (k, str(v)) for k, v in metric_results.items()]))
 
     if for_training:
-        return total_correct / count
+        return total_correct / count, total_loss / count
     else:
         # convert 2D labels/scores
         if len(scores) != entry_count:
@@ -444,7 +444,7 @@ def evaluate_regression(model, test_loader, dev, epoch, for_training=True, loss_
         ['    - %s: \n%s' % (k, str(v)) for k, v in metric_results.items()]))
 
     if for_training:
-        return total_loss / count
+        return total_loss / count, total_loss / count
     else:
         # convert 2D labels/scores
         observers = {k: _concat(v) for k, v in observers.items()}

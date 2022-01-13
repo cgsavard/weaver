@@ -65,6 +65,8 @@ parser.add_argument('-m', '--model-prefix', type=str, default='models/{auto}/net
                          'based on the timestamp and network configuration')
 parser.add_argument('--num-epochs', type=int, default=20,
                     help='number of epochs')
+parser.add_argument('--stop-toler', type=int, default=5,
+                    help='number of epochs to tolerate before early stopping')
 parser.add_argument('--steps-per-epoch', type=int, default=None,
                     help='number of steps (iterations) per epochs; '
                          'if neither of `--steps-per-epoch` or `--samples-per-epoch` is set, each epoch will run over all loaded samples')
@@ -613,6 +615,8 @@ def main(args):
 
         # training loop
         best_valid_metric = np.inf if args.regression_mode else 0
+        best_valid_loss = 1
+        tol_count = 0
         grad_scaler = torch.cuda.amp.GradScaler() if args.use_amp else None
         for epoch in range(args.num_epochs):
             if args.load_epoch is not None:
@@ -631,8 +635,8 @@ def main(args):
                 torch.save(opt.state_dict(), args.model_prefix + '_epoch-%d_optimizer.pt' % epoch)
 
             _logger.info('Epoch #%d validating' % epoch)
-            valid_metric = evaluate(model, val_loader, dev, epoch, loss_func=loss_func,
-                                    steps_per_epoch=args.steps_per_epoch_val, tb_helper=tb)
+            valid_metric, valid_loss = evaluate(model, val_loader, dev, epoch, loss_func=loss_func,
+                                                steps_per_epoch=args.steps_per_epoch_val, tb_helper=tb)
             is_best_epoch = (
                 valid_metric < best_valid_metric) if args.regression_mode else(
                 valid_metric > best_valid_metric)
@@ -644,6 +648,15 @@ def main(args):
                     torch.save(model, args.model_prefix + '_best_epoch_full.pt')
             _logger.info('Epoch #%d: Current validation metric: %.5f (best: %.5f)' %
                          (epoch, valid_metric, best_valid_metric), color='bold')
+            
+            if valid_loss <= best_valid_loss:
+                tol_count = 0;
+                best_valid_loss = valid_loss
+            else:
+                tol_count += 1
+                if tol_count > args.stop_toler:
+                    _logger.info('Training stopping early as stopping tolerance of %d met' % args.stop_toler)
+                    break;
 
     if args.data_test:
         if training_mode:
