@@ -89,7 +89,7 @@ def _read_files(filelist, branches, load_range=None, show_progressbar=False, **k
     return table
 
 
-def _write_root(file, table, treename='Events', compression=-1, step=1048576):
+def _write_root(file, table, treename='Jets', compression=-1, step=1048576):
     if compression == -1:
         compression = uproot3.write.compress.LZ4(4)
     with uproot3.recreate(file, compression=compression) as fout:

@@ -32,8 +32,8 @@ def main(argv):
     print('Output file is', outputfile)
     
     try:
-        in_ = (uproot3.open(inputfile)["tree"].arrays("*", namedecode="utf-8"))
-        out_ = (uproot3.open(outputfile)["Events"].arrays("*", namedecode="utf-8"))
+        in_ = (uproot3.open(inputfile)["Jets"].arrays("*", namedecode="utf-8"))
+        out_ = (uproot3.open(outputfile)["Jets"].arrays("*", namedecode="utf-8"))
     except:
         print('Input/output files are incorrect')
         return

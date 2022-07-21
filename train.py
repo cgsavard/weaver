@@ -617,7 +617,8 @@ def main(args):
         best_valid_metric = np.inf if args.regression_mode else 0
         best_valid_loss = 1
         tol_count = 0
-        m_file = open("metric_file.txt","w")
+        m_filename = args.model_prefix+"_train_metrics.txt"
+        m_file = open(m_filename,"w")
         m_file.write("train_acc,train_loss,val_acc,val_loss\n")
         grad_scaler = torch.cuda.amp.GradScaler() if args.use_amp else None
         for epoch in range(args.num_epochs):
